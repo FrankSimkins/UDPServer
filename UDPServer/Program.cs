@@ -12,8 +12,9 @@ namespace UDPServer
     {
         static void Main(string[] args)
         {
-
+            //
             //Declare variables
+            //
             List<User> userList = new List<User>();
             UdpClient udpServer = new UdpClient(8080);
             List<string> userString = new List<string>();
