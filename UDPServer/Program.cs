@@ -43,7 +43,7 @@ namespace UDPServer
                         newUser.Port = remoteEndPoint.Port;
                         //newUser.Port = 8085;
                         newUser.UserIP = remoteEndPoint.Address;
-                        newUser.UserEndPoint = new IPEndPoint(remoteEndPoint.Address, 8085);
+                        newUser.UserEndPoint = new IPEndPoint(remoteEndPoint.Address, remoteEndPoint.Port);
                         userList.Add(newUser);
                         Console.WriteLine(userName.ToString() + ": Connected");
                     }
