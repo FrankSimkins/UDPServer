@@ -86,14 +86,11 @@ namespace UDPServer
 
         static void SendMessage(IPEndPoint remoteEndPoint, UdpClient udpServer)
         {
-            //Console.WriteLine("Send" + lastMSG.ToString());
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             if (lastMSG < lastMessage)
             {
-                string returnData = lastMessage + ":" + messageArray[lastMessage];
-                Console.WriteLine($"Sending {returnData}");
-                //byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
+                string returnData = lastMessage + ": " + messageArray[lastMessage];
                 try
                 {
                     byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
@@ -121,7 +118,7 @@ namespace UDPServer
             //    lastMessage = 0;
             //}
             lastMessage++;
-            messageArray[lastMessage] = returnData;
+            messageArray[lastMessage] = userName + ": " + returnData;
             Console.WriteLine($"{userName}: {returnData} : {lastMessage}");
         }
 
@@ -137,7 +134,7 @@ namespace UDPServer
             userList.Add(newUser);
             Console.WriteLine(userName.ToString() + ": Connected");
 
-            string returnData = lastMessage.ToString();
+            string returnData = lastMessage.ToString() + ":";
             byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
 
             try
