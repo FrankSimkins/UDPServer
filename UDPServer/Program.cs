@@ -12,10 +12,10 @@ namespace UDPServer
     {
         static int lastMessage = 0;
         static int lastMSG;
-        static string[] messageArray = new string[64];
+        static string[] messageArray = new string[100024];
         static List<string> userString = new List<string>();
         static List<User> userList = new List<User>();
-
+        
 
         static void Main(string[] args)
         {
@@ -29,7 +29,6 @@ namespace UDPServer
             string msg = "";
             string userName = "";
             string lMessage = "";
-            
             
 
 
@@ -47,7 +46,7 @@ namespace UDPServer
                     lMessage = returnData.Split(':')[1];
                     int.TryParse(lMessage, out lastMSG);
                     userName = returnData.Split(':')[2];
-                    //msg = returnData.Split(':')[3];
+                    msg = returnData.Split(':')[3];
                 }
                 catch(Exception e)
                 {
@@ -62,7 +61,7 @@ namespace UDPServer
                         SendMessage(remoteEndPoint, udpServer);
                         break;
                     case "receive":
-                        ReceiveMessage(msg);
+                        ReceiveMessage(msg, userName);
                         break;
 
                     case "connect":
@@ -87,16 +86,17 @@ namespace UDPServer
 
         static void SendMessage(IPEndPoint remoteEndPoint, UdpClient udpServer)
         {
-            Console.WriteLine("Send" + lastMSG.ToString());
+            //Console.WriteLine("Send" + lastMSG.ToString());
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            if (lastMSG != lastMessage)
+            if (lastMSG < lastMessage)
             {
-
-                string returnData = messageArray[lastMSG + 1];
-                byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
-
+                string returnData = lastMessage + ":" + messageArray[lastMessage];
+                Console.WriteLine($"Sending {returnData}");
+                //byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
                 try
                 {
+                    byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
                     udpServer.Send(byteMessage, byteMessage.Length, remoteEndPoint);
                 }
                 catch (Exception exception)
@@ -104,18 +104,25 @@ namespace UDPServer
                     Console.WriteLine(exception);
                 }
             }
+            else
+            {
+                byte[] bMessage = Encoding.ASCII.GetBytes($"{lastMessage}:");
+                udpServer.Send(bMessage, bMessage.Length, remoteEndPoint);
+
+            }
 
             
         }
 
-        static void ReceiveMessage(string returnData)
+        static void ReceiveMessage(string returnData, string userName)
         {
-            if (lastMessage > 64)
-            {
-                lastMessage = 0;
-            }
+            //if (lastMessage > 62)
+            //{
+            //    lastMessage = 0;
+            //}
             lastMessage++;
             messageArray[lastMessage] = returnData;
+            Console.WriteLine($"{userName}: {returnData} : {lastMessage}");
         }
 
         static void Connect(string userName, IPEndPoint remoteEndPoint, UdpClient udpServer)
