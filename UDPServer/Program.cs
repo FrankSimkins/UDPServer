@@ -10,20 +10,18 @@ namespace UDPServer
 {
     class Program
     {
+
+        //Declare global variables
         static int lastMessage = 0;
         static int lastMSG;
-        static string[] messageArray = new string[100024];
         static List<string> userString = new List<string>();
-        static List<User> userList = new List<User>();
+        static string lastMessageString = "";
         
 
         static void Main(string[] args)
         {
-            //
-            //Declare variables
-            //
+            //Declare/initialize variables
             UdpClient udpServer = new UdpClient(8080);
-            
             bool running = true;
             string command = "";
             string msg = "";
@@ -39,7 +37,7 @@ namespace UDPServer
                 IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
                 try
                 {
-                    //Receive bytes, translate them to a string. And find the username in the string.
+                    //Receive bytes, translate them to a string. Then use string.split to find info from the string.
                     byte[] receivedBytes = udpServer.Receive(ref remoteEndPoint);
                     string returnData = Encoding.ASCII.GetString(receivedBytes);
                     command = returnData.Split(':')[0];
@@ -48,14 +46,13 @@ namespace UDPServer
                     userName = returnData.Split(':')[2];
                     msg = returnData.Split(':')[3];
                 }
-                catch(Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e);
                 }
 
 
 
-                    switch (command)
+                switch (command)
                 {
                     case "send":
                         SendMessage(remoteEndPoint, udpServer);
@@ -69,7 +66,7 @@ namespace UDPServer
                         break;
 
                     case "disconnect":
-                        Disconnect();
+                        Disconnect(remoteEndPoint, userName);
                         break;
 
 
@@ -90,7 +87,7 @@ namespace UDPServer
 
             if (lastMSG < lastMessage)
             {
-                string returnData = lastMessage + ": " + messageArray[lastMessage];
+                string returnData = lastMessage + ": " + lastMessageString;
                 try
                 {
                     byte[] byteMessage = Encoding.ASCII.GetBytes(returnData);
@@ -113,25 +110,15 @@ namespace UDPServer
 
         static void ReceiveMessage(string returnData, string userName)
         {
-            //if (lastMessage > 62)
-            //{
-            //    lastMessage = 0;
-            //}
             lastMessage++;
-            messageArray[lastMessage] = userName + ": " + returnData;
+            lastMessageString = userName + ": " + returnData;
             Console.WriteLine($"{userName}: {returnData} : {lastMessage}");
         }
 
         static void Connect(string userName, IPEndPoint remoteEndPoint, UdpClient udpServer)
         {
-            User newUser = new User();
-            userString.Add(userName);
-            newUser.UserName = userName;
-            newUser.Port = remoteEndPoint.Port;
-            //newUser.Port = 8085;
-            newUser.UserIP = remoteEndPoint.Address;
-            newUser.UserEndPoint = new IPEndPoint(remoteEndPoint.Address, remoteEndPoint.Port);
-            userList.Add(newUser);
+
+            //When the user connects send a message to the user letting them know which message # we are on.
             Console.WriteLine(userName.ToString() + ": Connected");
 
             string returnData = lastMessage.ToString() + ":";
@@ -148,8 +135,9 @@ namespace UDPServer
 
         }
 
-        static void Disconnect()
+        static void Disconnect(IPEndPoint remoteEndPoint, string userName)
         {
+            Console.WriteLine(userName.ToString() + ": Disconnected");
         }
     }
 }
